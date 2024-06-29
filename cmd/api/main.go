@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/lalapopo123/go-microservice-boilerplate/config"
+	"github.com/lalapopo123/go-microservice-boilerplate/internal/server"
 	"github.com/lalapopo123/go-microservice-boilerplate/pkg/db/aws"
 	"github.com/lalapopo123/go-microservice-boilerplate/pkg/db/postgres"
 	"github.com/lalapopo123/go-microservice-boilerplate/pkg/db/redis"
@@ -94,4 +95,8 @@ func main() {
 	defer closer.Close()
 	appLogger.Info("Opentracing connected")
 
+	s := server.NewServer(cfg, psqlDB, redisClient, awsClient, appLogger)
+	if err := s.Run(); err != nil {
+		log.Fatal(err)
+	}
 }

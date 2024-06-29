@@ -24,7 +24,7 @@ func NewAuthRedisRepo(redisClient *redis.Client) auth.RedisRepository {
 }
 
 // Get user by id
-func (a *authRedisRepo) GetByIDCtx(ctx context.Context, key string) (*models.User, error) {
+func (a *authRedisRepo) GetByIDCtx(ctx context.Context, key string) (*models.UserWithRole, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "authRedisRepo.GetByIDCtx")
 	defer span.Finish()
 
@@ -32,7 +32,7 @@ func (a *authRedisRepo) GetByIDCtx(ctx context.Context, key string) (*models.Use
 	if err != nil {
 		return nil, errors.Wrap(err, "authRedisRepo.GetByIDCtx.redisClient.Get")
 	}
-	user := &models.User{}
+	user := &models.UserWithRole{}
 	if err = json.Unmarshal(userBytes, user); err != nil {
 		return nil, errors.Wrap(err, "authRedisRepo.GetByIDCtx.json.Unmarshal")
 	}
@@ -40,7 +40,7 @@ func (a *authRedisRepo) GetByIDCtx(ctx context.Context, key string) (*models.Use
 }
 
 // Cache user with duration in seconds
-func (a *authRedisRepo) SetUserCtx(ctx context.Context, key string, seconds int, user *models.User) error {
+func (a *authRedisRepo) SetUserCtx(ctx context.Context, key string, seconds int, user *models.UserWithRole) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "authRedisRepo.SetUserCtx")
 	defer span.Finish()
 

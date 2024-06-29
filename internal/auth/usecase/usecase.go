@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 
 	"github.com/lalapopo123/go-microservice-boilerplate/config"
 	"github.com/lalapopo123/go-microservice-boilerplate/internal/auth"
+	"github.com/lalapopo123/go-microservice-boilerplate/internal/dto"
 	"github.com/lalapopo123/go-microservice-boilerplate/internal/models"
 	"github.com/lalapopo123/go-microservice-boilerplate/pkg/httpErrors"
 	"github.com/lalapopo123/go-microservice-boilerplate/pkg/logger"
@@ -37,24 +37,30 @@ func NewAuthUseCase(cfg *config.Config, authRepo auth.Repository, redisRepo auth
 }
 
 // Create new user
-func (u *authUC) Register(ctx context.Context, user *models.User) (*models.UserWithToken, error) {
+func (u *authUC) Register(ctx context.Context, user *dto.RegisterUserRequest) (*models.UserWithToken, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "authUC.Register")
 	defer span.Finish()
 
-	existsUser, err := u.authRepo.FindByEmail(ctx, user)
+	existsUser, err := u.authRepo.FindByEmail(ctx, user.Email)
 	if existsUser != nil || err == nil {
 		return nil, httpErrors.NewRestErrorWithMessage(http.StatusBadRequest, httpErrors.ErrEmailAlreadyExists, nil)
 	}
 
-	if err = user.PrepareCreate(); err != nil {
+	userModel := &models.User{
+		Username: user.Username,
+		Email:    user.Email,
+		Password: string(user.Password),
+	}
+
+	if err = userModel.PrepareCreate(); err != nil {
 		return nil, httpErrors.NewBadRequestError(errors.Wrap(err, "authUC.Register.PrepareCreate"))
 	}
 
-	createdUser, err := u.authRepo.Register(ctx, user)
+	createdUser, err := u.authRepo.Register(ctx, userModel)
 	if err != nil {
 		return nil, err
 	}
-	createdUser.SanitizePassword()
+	createdUser.User.SanitizePassword()
 
 	token, err := utils.GenerateJWTToken(createdUser, u.cfg)
 	if err != nil {
@@ -62,7 +68,7 @@ func (u *authUC) Register(ctx context.Context, user *models.User) (*models.UserW
 	}
 
 	return &models.UserWithToken{
-		User:  createdUser,
+		User:  &createdUser.User,
 		Token: token,
 	}, nil
 }
@@ -83,7 +89,7 @@ func (u *authUC) Update(ctx context.Context, user *models.User) (*models.User, e
 
 	updatedUser.SanitizePassword()
 
-	if err = u.redisRepo.DeleteUserCtx(ctx, u.GenerateUserKey(user.UserID.String())); err != nil {
+	if err = u.redisRepo.DeleteUserCtx(ctx, u.GenerateUserKey(user.ID)); err != nil {
 		u.logger.Errorf("AuthUC.Update.DeleteUserCtx: %s", err)
 	}
 
@@ -93,7 +99,7 @@ func (u *authUC) Update(ctx context.Context, user *models.User) (*models.User, e
 }
 
 // Delete new user
-func (u *authUC) Delete(ctx context.Context, userID uuid.UUID) error {
+func (u *authUC) Delete(ctx context.Context, userID int) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "authUC.Delete")
 	defer span.Finish()
 
@@ -101,7 +107,7 @@ func (u *authUC) Delete(ctx context.Context, userID uuid.UUID) error {
 		return err
 	}
 
-	if err := u.redisRepo.DeleteUserCtx(ctx, u.GenerateUserKey(userID.String())); err != nil {
+	if err := u.redisRepo.DeleteUserCtx(ctx, u.GenerateUserKey(userID)); err != nil {
 		u.logger.Errorf("AuthUC.Delete.DeleteUserCtx: %s", err)
 	}
 
@@ -109,11 +115,11 @@ func (u *authUC) Delete(ctx context.Context, userID uuid.UUID) error {
 }
 
 // Get user by id
-func (u *authUC) GetByID(ctx context.Context, userID uuid.UUID) (*models.User, error) {
+func (u *authUC) GetByID(ctx context.Context, userID int) (*models.UserWithRole, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "authUC.GetByID")
 	defer span.Finish()
 
-	cachedUser, err := u.redisRepo.GetByIDCtx(ctx, u.GenerateUserKey(userID.String()))
+	cachedUser, err := u.redisRepo.GetByIDCtx(ctx, u.GenerateUserKey(userID))
 	if err != nil {
 		u.logger.Errorf("authUC.GetByID.GetByIDCtx: %v", err)
 	}
@@ -126,11 +132,11 @@ func (u *authUC) GetByID(ctx context.Context, userID uuid.UUID) (*models.User, e
 		return nil, err
 	}
 
-	if err = u.redisRepo.SetUserCtx(ctx, u.GenerateUserKey(userID.String()), cacheDuration, user); err != nil {
+	if err = u.redisRepo.SetUserCtx(ctx, u.GenerateUserKey(userID), cacheDuration, user); err != nil {
 		u.logger.Errorf("authUC.GetByID.SetUserCtx: %v", err)
 	}
 
-	user.SanitizePassword()
+	user.User.SanitizePassword()
 
 	return user, nil
 }
@@ -152,20 +158,20 @@ func (u *authUC) GetUsers(ctx context.Context, pq *utils.PaginationQuery) (*mode
 }
 
 // Login user, returns user model with jwt token
-func (u *authUC) Login(ctx context.Context, user *models.User) (*models.UserWithToken, error) {
+func (u *authUC) Login(ctx context.Context, user *dto.LoginUserRequest) (*models.UserWithToken, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "authUC.Login")
 	defer span.Finish()
 
-	foundUser, err := u.authRepo.FindByEmail(ctx, user)
+	foundUser, err := u.authRepo.FindByUsername(ctx, user.Username)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = foundUser.ComparePasswords(user.Password); err != nil {
+	if err = foundUser.User.ComparePasswords(user.Password); err != nil {
 		return nil, httpErrors.NewUnauthorizedError(errors.Wrap(err, "authUC.GetUsers.ComparePasswords"))
 	}
 
-	foundUser.SanitizePassword()
+	foundUser.User.SanitizePassword()
 
 	token, err := utils.GenerateJWTToken(foundUser, u.cfg)
 	if err != nil {
@@ -173,26 +179,18 @@ func (u *authUC) Login(ctx context.Context, user *models.User) (*models.UserWith
 	}
 
 	return &models.UserWithToken{
-		User:  foundUser,
+		User:  &foundUser.User,
 		Token: token,
 	}, nil
 }
 
 // Upload user avatar
-func (u *authUC) UploadAvatar(ctx context.Context, userID uuid.UUID, file models.UploadInput) (*models.User, error) {
+func (u *authUC) UploadAvatar(ctx context.Context, userID int, file models.UploadInput) (*models.User, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "authUC.UploadAvatar")
 	defer span.Finish()
 
-	uploadInfo, err := u.awsRepo.PutObject(ctx, file)
-	if err != nil {
-		return nil, httpErrors.NewInternalServerError(errors.Wrap(err, "authUC.UploadAvatar.PutObject"))
-	}
-
-	avatarURL := u.generateAWSMinioURL(file.BucketName, uploadInfo.Key)
-
 	updatedUser, err := u.authRepo.Update(ctx, &models.User{
-		UserID: userID,
-		Avatar: &avatarURL,
+		ID: userID,
 	})
 	if err != nil {
 		return nil, err
@@ -203,10 +201,6 @@ func (u *authUC) UploadAvatar(ctx context.Context, userID uuid.UUID, file models
 	return updatedUser, nil
 }
 
-func (u *authUC) GenerateUserKey(userID string) string {
-	return fmt.Sprintf("%s: %s", basePrefix, userID)
-}
-
-func (u *authUC) generateAWSMinioURL(bucket string, key string) string {
-	return fmt.Sprintf("%s/minio/%s/%s", u.cfg.AWS.MinioEndpoint, bucket, key)
+func (u *authUC) GenerateUserKey(userID int) string {
+	return fmt.Sprintf("%s: %d", basePrefix, userID)
 }

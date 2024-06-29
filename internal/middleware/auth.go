@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 
@@ -59,14 +59,16 @@ func (mw *MiddlewareManager) AuthSessionMiddleware(next echo.HandlerFunc) echo.H
 		c.Set("uid", sess.SessionID)
 		c.Set("user", user)
 
+		fmt.Println("UUUDUUD: ", user)
+
 		ctx := context.WithValue(c.Request().Context(), utils.UserCtxKey{}, user)
 		c.SetRequest(c.Request().WithContext(ctx))
 
 		mw.logger.Info(
-			"SessionMiddleware, RequestID: %s,  IP: %s, UserID: %s, CookieSessionID: %s",
+			"SessionMiddleware, RequestID: %s,  IP: %s, UserID: %d, CookieSessionID: %s",
 			utils.GetRequestID(c),
 			utils.GetIPAddress(c),
-			user.UserID.String(),
+			user.User.ID,
 			cookie.Value,
 		)
 
@@ -117,8 +119,8 @@ func (mw *MiddlewareManager) AuthJWTMiddleware(authUC auth.UseCase, cfg *config.
 // Admin role
 func (mw *MiddlewareManager) AdminMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		user, ok := c.Get("user").(*models.User)
-		if !ok || *user.Role != "admin" {
+		user, ok := c.Get("user").(*models.UserWithRole)
+		if !ok || *&user.Role.Name != "admin" {
 			return c.JSON(http.StatusForbidden, httpErrors.NewUnauthorizedError(httpErrors.PermissionDenied))
 		}
 		return next(c)
@@ -129,20 +131,27 @@ func (mw *MiddlewareManager) AdminMiddleware(next echo.HandlerFunc) echo.Handler
 func (mw *MiddlewareManager) OwnerOrAdminMiddleware() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			user, ok := c.Get("user").(*models.User)
+			usrId, err := strconv.Atoi(c.Param("user_id"))
+
+			if err != nil {
+				mw.logger.Errorf("Error c.Get(user) RequestID: %s, ERROR: %s,", utils.GetRequestID(c), "invalid user ctx")
+				return c.JSON(http.StatusUnauthorized, httpErrors.NewUnauthorizedError(httpErrors.Unauthorized))
+			}
+
+			user, ok := c.Get("user").(*models.UserWithRole)
 			if !ok {
 				mw.logger.Errorf("Error c.Get(user) RequestID: %s, ERROR: %s,", utils.GetRequestID(c), "invalid user ctx")
 				return c.JSON(http.StatusUnauthorized, httpErrors.NewUnauthorizedError(httpErrors.Unauthorized))
 			}
 
-			if *user.Role == "admin" {
+			if *&user.Role.Name == "admin" {
 				return next(c)
 			}
 
-			if user.UserID.String() != c.Param("user_id") {
+			if user.User.ID != usrId {
 				mw.logger.Errorf("Error c.Get(user) RequestID: %s, UserID: %s, ERROR: %s,",
 					utils.GetRequestID(c),
-					user.UserID.String(),
+					user.User.ID,
 					"invalid user ctx",
 				)
 				return c.JSON(http.StatusForbidden, httpErrors.NewForbiddenError(httpErrors.Forbidden))
@@ -157,25 +166,25 @@ func (mw *MiddlewareManager) OwnerOrAdminMiddleware() echo.MiddlewareFunc {
 func (mw *MiddlewareManager) RoleBasedAuthMiddleware(roles []string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			user, ok := c.Get("user").(*models.User)
+			user, ok := c.Get("user").(*models.UserWithRole)
 			if !ok {
-				mw.logger.Errorf("Error c.Get(user) RequestID: %s, UserID: %s, ERROR: %s,",
+				mw.logger.Errorf("Error c.Get(user) RequestID: %s, UserID: %d, ERROR: %s,",
 					utils.GetRequestID(c),
-					user.UserID.String(),
+					user.User.ID,
 					"invalid user ctx",
 				)
 				return c.JSON(http.StatusUnauthorized, httpErrors.NewUnauthorizedError(httpErrors.Unauthorized))
 			}
 
 			for _, role := range roles {
-				if role == *user.Role {
+				if role == *&user.Role.Name {
 					return next(c)
 				}
 			}
 
 			mw.logger.Errorf("Error c.Get(user) RequestID: %s, UserID: %s, ERROR: %s,",
 				utils.GetRequestID(c),
-				user.UserID.String(),
+				user.User.ID,
 				"invalid user ctx",
 			)
 
@@ -205,17 +214,17 @@ func (mw *MiddlewareManager) validateJWTToken(tokenString string, authUC auth.Us
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		userID, ok := claims["id"].(string)
+		userIDStr, ok := claims["id"].(string)
 		if !ok {
 			return httpErrors.InvalidJWTClaims
 		}
 
-		userUUID, err := uuid.Parse(userID)
+		userID, err := strconv.Atoi(userIDStr)
 		if err != nil {
-			return err
+			return err // Handle conversion error appropriately
 		}
 
-		u, err := authUC.GetByID(c.Request().Context(), userUUID)
+		u, err := authUC.GetByID(c.Request().Context(), userID)
 		if err != nil {
 			return err
 		}

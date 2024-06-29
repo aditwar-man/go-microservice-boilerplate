@@ -6,16 +6,16 @@ LIST_GO_FILES = Get-ChildItem -Path . -Recurse -Filter *.go | ForEach-Object { $
 # Go migrate postgresql
 
 force:
-	migrate -database postgres://postgres:postgres@localhost:5432/auth_db?sslmode=disable -path migrations force 1
+	migrate -database postgres://postgres:postgres@localhost:5432/user_service_db?sslmode=disable -path migrations force 1
 
 version:
-	migrate -database postgres://postgres:postgres@localhost:5432/auth_db?sslmode=disable -path migrations version
+	migrate -database postgres://postgres:postgres@localhost:5432/user_service_db?sslmode=disable -path migrations version
 
 migrate_up:
-	migrate -database postgres://postgres:postgres@localhost:5432/auth_db?sslmode=disable -path migrations up 1
+	migrate -database postgres://postgres:postgres@localhost:5432/user_service_db?sslmode=disable -path migrations up
 
 migrate_down:
-	migrate -database postgres://postgres:postgres@localhost:5432/auth_db?sslmode=disable -path migrations down 1
+	migrate -database postgres://postgres:postgres@localhost:5432/user_service_db?sslmode=disable -path migrations down 1
 
 
 # ==============================================================================
@@ -35,7 +35,7 @@ prod:
 
 local:
 	echo "Starting local environment"
-	docker-compose -f docker-compose.local.yml up --build
+	docker-compose -f docker-compose.yml up --build
 
 
 # ==============================================================================
@@ -47,7 +47,7 @@ run-linter:
 
 swaggo:
 	echo "Starting swagger generating"
-	swag init -g ./**/**/*.go
+	swag init -g ./cmd/api/main.go
 
 swaggo-windows:
 	powershell -Command "{$oFiles = $(LIST_GO_FILES) -join ','; swag init -g $oFiles}"

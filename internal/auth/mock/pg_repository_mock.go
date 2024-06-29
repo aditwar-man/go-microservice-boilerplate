@@ -9,7 +9,6 @@ import (
 	models "github.com/lalapopo123/go-microservice-boilerplate/internal/models"
 	utils "github.com/lalapopo123/go-microservice-boilerplate/pkg/utils"
 	gomock "github.com/golang/mock/gomock"
-	uuid "github.com/google/uuid"
 	reflect "reflect"
 )
 
@@ -67,7 +66,7 @@ func (mr *MockRepositoryMockRecorder) Update(ctx, user interface{}) *gomock.Call
 }
 
 // Delete mocks base method
-func (m *MockRepository) Delete(ctx context.Context, userID uuid.UUID) error {
+func (m *MockRepository) Delete(ctx context.Context, userID int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", ctx, userID)
 	ret0, _ := ret[0].(error)
@@ -81,7 +80,7 @@ func (mr *MockRepositoryMockRecorder) Delete(ctx, userID interface{}) *gomock.Ca
 }
 
 // GetByID mocks base method
-func (m *MockRepository) GetByID(ctx context.Context, userID uuid.UUID) (*models.User, error) {
+func (m *MockRepository) GetByID(ctx context.Context, userID int) (*models.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByID", ctx, userID)
 	ret0, _ := ret[0].(*models.User)

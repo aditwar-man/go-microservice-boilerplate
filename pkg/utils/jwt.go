@@ -4,6 +4,7 @@ import (
 	"errors"
 	"html"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -17,15 +18,19 @@ import (
 type Claims struct {
 	Email string `json:"email"`
 	ID    string `json:"id"`
+	Role  int    `json:"role"`
 	jwt.StandardClaims
 }
 
 // Generate new JWT Token
-func GenerateJWTToken(user *models.User, config *config.Config) (string, error) {
+func GenerateJWTToken(user *models.UserWithRole, config *config.Config) (string, error) {
 	// Register the JWT claims, which includes the username and expiry time
+	usId := strconv.Itoa(user.User.ID)
+
 	claims := &Claims{
-		Email: user.Email,
-		ID:    user.UserID.String(),
+		Email: user.User.Email,
+		ID:    usId,
+		Role:  user.Role.ID,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Minute * 60).Unix(),
 		},

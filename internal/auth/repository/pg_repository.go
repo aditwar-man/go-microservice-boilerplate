@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
@@ -25,19 +24,34 @@ func NewAuthRepository(db *sqlx.DB) auth.Repository {
 }
 
 // Create new user
-func (r *authRepo) Register(ctx context.Context, user *models.User) (*models.User, error) {
+func (r *authRepo) Register(ctx context.Context, user *models.User) (*models.UserWithRole, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "authRepo.Register")
 	defer span.Finish()
 
 	u := &models.User{}
-	if err := r.db.QueryRowxContext(ctx, createUserQuery, &user.FirstName, &user.LastName, &user.Email,
-		&user.Password, &user.Role, &user.About, &user.Avatar, &user.PhoneNumber, &user.Address, &user.City,
-		&user.Gender, &user.Postcode, &user.Birthday,
-	).StructScan(u); err != nil {
+	if err := r.db.QueryRowxContext(ctx, createUserQuery, &user.Username, &user.Email, &user.Password).StructScan(u); err != nil {
 		return nil, errors.Wrap(err, "authRepo.Register.StructScan")
 	}
 
-	return u, nil
+	role := &models.Role{}
+	if err := r.db.QueryRowxContext(ctx, `
+		SELECT id, name, description, parent_role_id FROM roles WHERE name = $1 LIMIT 1
+	`, "employee").StructScan(role); err != nil {
+		return nil, errors.Wrap(err, "authRepo.Register.FetchRole.QueryRowContext")
+	}
+
+	if _, err := r.db.ExecContext(ctx, `
+		INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)
+	`, u.ID, role.ID); err != nil {
+		return nil, errors.Wrap(err, "authRepo.Register.SetUserRole.QueryRowContext")
+	}
+
+	userWithRole := models.UserWithRole{
+		User: *u,
+		Role: *role,
+	}
+
+	return &userWithRole, nil
 }
 
 // Update existing user
@@ -46,9 +60,8 @@ func (r *authRepo) Update(ctx context.Context, user *models.User) (*models.User,
 	defer span.Finish()
 
 	u := &models.User{}
-	if err := r.db.GetContext(ctx, u, updateUserQuery, &user.FirstName, &user.LastName, &user.Email,
-		&user.Role, &user.About, &user.Avatar, &user.PhoneNumber, &user.Address, &user.City, &user.Gender,
-		&user.Postcode, &user.Birthday, &user.UserID,
+	if err := r.db.GetContext(ctx, u, updateUserQuery, &user.Username, &user.Email,
+		&user.ID,
 	); err != nil {
 		return nil, errors.Wrap(err, "authRepo.Update.GetContext")
 	}
@@ -57,7 +70,7 @@ func (r *authRepo) Update(ctx context.Context, user *models.User) (*models.User,
 }
 
 // Delete existing user
-func (r *authRepo) Delete(ctx context.Context, userID uuid.UUID) error {
+func (r *authRepo) Delete(ctx context.Context, userID int) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "authRepo.Delete")
 	defer span.Finish()
 
@@ -77,14 +90,18 @@ func (r *authRepo) Delete(ctx context.Context, userID uuid.UUID) error {
 }
 
 // Get user by id
-func (r *authRepo) GetByID(ctx context.Context, userID uuid.UUID) (*models.User, error) {
+func (r *authRepo) GetByID(ctx context.Context, userID int) (*models.UserWithRole, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "authRepo.GetByID")
 	defer span.Finish()
 
-	user := &models.User{}
-	if err := r.db.QueryRowxContext(ctx, getUserQuery, userID).StructScan(user); err != nil {
-		return nil, errors.Wrap(err, "authRepo.GetByID.QueryRowxContext")
+	user := &models.UserWithRole{}
+
+	foundUser := &models.UserWithRole{}
+	if err := r.db.QueryRowxContext(ctx, getUserRoleQuery, userID).StructScan(foundUser); err != nil {
+		return nil, errors.Wrap(err, "authRepo.FindByUsername.QueryRowxContext")
 	}
+	return foundUser, nil
+
 	return user, nil
 }
 
@@ -182,13 +199,24 @@ func (r *authRepo) GetUsers(ctx context.Context, pq *utils.PaginationQuery) (*mo
 }
 
 // Find user by email
-func (r *authRepo) FindByEmail(ctx context.Context, user *models.User) (*models.User, error) {
+func (r *authRepo) FindByEmail(ctx context.Context, userEmail string) (*models.User, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "authRepo.FindByEmail")
 	defer span.Finish()
 
 	foundUser := &models.User{}
-	if err := r.db.QueryRowxContext(ctx, findUserByEmail, user.Email).StructScan(foundUser); err != nil {
+	if err := r.db.QueryRowxContext(ctx, findUserByEmail, userEmail).StructScan(foundUser); err != nil {
 		return nil, errors.Wrap(err, "authRepo.FindByEmail.QueryRowxContext")
+	}
+	return foundUser, nil
+}
+
+func (r *authRepo) FindByUsername(ctx context.Context, username string) (*models.UserWithRole, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "authRepo.FindByUsername")
+	defer span.Finish()
+
+	foundUser := &models.UserWithRole{}
+	if err := r.db.QueryRowxContext(ctx, findByUsername, username).StructScan(foundUser); err != nil {
+		return nil, errors.Wrap(err, "authRepo.FindByUsername.QueryRowxContext")
 	}
 	return foundUser, nil
 }

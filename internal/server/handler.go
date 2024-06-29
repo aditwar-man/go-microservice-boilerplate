@@ -6,10 +6,10 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/lalapopo123/go-microservice-boilerplate/docs"
 	"github.com/lalapopo123/go-microservice-boilerplate/pkg/csrf"
 	"github.com/lalapopo123/go-microservice-boilerplate/pkg/metric"
 	"github.com/lalapopo123/go-microservice-boilerplate/pkg/utils"
-	"github.com/swaggo/swag/example/basic/docs"
 
 	echoSwagger "github.com/swaggo/echo-swagger"
 
@@ -86,7 +86,7 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	health := v1.Group("/health")
 	authGroup := v1.Group("/auth")
 
-	authHttp.MapAuthRoutes(authGroup, authHandlers, mw)
+	authHttp.MapAuthRoutes(authGroup, authHandlers, mw, authUC, s.cfg)
 
 	health.GET("", func(c echo.Context) error {
 		s.logger.Infof("Health check RequestID: %s", utils.GetRequestID(c))

@@ -13,6 +13,5 @@ type Handlers interface {
 	FindByName() echo.HandlerFunc
 	GetUsers() echo.HandlerFunc
 	GetMe() echo.HandlerFunc
-	UploadAvatar() echo.HandlerFunc
 	GetCSRFToken() echo.HandlerFunc
 }

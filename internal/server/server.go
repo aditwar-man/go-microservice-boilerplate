@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	certFile       = "ssl/Server.crt"
-	keyFile        = "ssl/Server.pem"
+	certFile       = "ssl/server.crt"
+	keyFile        = "ssl/server.pem"
 	maxHeaderBytes = 1 << 20
 	ctxTimeout     = 5
 )
@@ -51,9 +51,9 @@ func NewServer(
 
 func (s *Server) Run() error {
 	if s.cfg.Server.SSL {
-		// if err := s.MapHandlers(s.echo); err != nil {
-		// 	return err
-		// }
+		if err := s.MapHandlers(s.echo); err != nil {
+			return err
+		}
 		s.echo.Server.ReadTimeout = time.Second * s.cfg.Server.ReadTimeout
 		s.echo.Server.WriteTimeout = time.Second * s.cfg.Server.WriteTimeout
 

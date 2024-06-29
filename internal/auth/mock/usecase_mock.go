@@ -9,7 +9,6 @@ import (
 	models "github.com/lalapopo123/go-microservice-boilerplate/internal/models"
 	utils "github.com/lalapopo123/go-microservice-boilerplate/pkg/utils"
 	gomock "github.com/golang/mock/gomock"
-	uuid "github.com/google/uuid"
 	reflect "reflect"
 )
 
@@ -82,7 +81,7 @@ func (mr *MockUseCaseMockRecorder) Update(ctx, user interface{}) *gomock.Call {
 }
 
 // Delete mocks base method
-func (m *MockUseCase) Delete(ctx context.Context, userID uuid.UUID) error {
+func (m *MockUseCase) Delete(ctx context.Context, userID int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", ctx, userID)
 	ret0, _ := ret[0].(error)
@@ -96,7 +95,7 @@ func (mr *MockUseCaseMockRecorder) Delete(ctx, userID interface{}) *gomock.Call 
 }
 
 // GetByID mocks base method
-func (m *MockUseCase) GetByID(ctx context.Context, userID uuid.UUID) (*models.User, error) {
+func (m *MockUseCase) GetByID(ctx context.Context, userID int) (*models.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByID", ctx, userID)
 	ret0, _ := ret[0].(*models.User)
@@ -141,7 +140,7 @@ func (mr *MockUseCaseMockRecorder) GetUsers(ctx, pq interface{}) *gomock.Call {
 }
 
 // UploadAvatar mocks base method
-func (m *MockUseCase) UploadAvatar(ctx context.Context, userID uuid.UUID, file models.UploadInput) (*models.User, error) {
+func (m *MockUseCase) UploadAvatar(ctx context.Context, userID int, file models.UploadInput) (*models.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UploadAvatar", ctx, userID, file)
 	ret0, _ := ret[0].(*models.User)

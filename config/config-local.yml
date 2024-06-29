@@ -27,6 +27,7 @@ postgres:
   PostgresqlDbname: user_service_db
   PostgresqlSslmode: false
   PgDriver: pgx
+  DefaultSchema: public
 
 redis:
   RedisAddr: localhost:6379

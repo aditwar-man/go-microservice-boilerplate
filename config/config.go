@@ -57,6 +57,7 @@ type PostgresConfig struct {
 	PostgresqlDbname   string
 	PostgresqlSSLMode  bool
 	PgDriver           string
+	DefaultSchema      string
 }
 
 // Redis config

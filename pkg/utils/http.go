@@ -90,8 +90,8 @@ func DeleteSessionCookie(c echo.Context, sessionName string) {
 type UserCtxKey struct{}
 
 // Get user from context
-func GetUserFromCtx(ctx context.Context) (*models.User, error) {
-	user, ok := ctx.Value(UserCtxKey{}).(*models.User)
+func GetUserFromCtx(ctx context.Context) (*models.UserWithRole, error) {
+	user, ok := ctx.Value(UserCtxKey{}).(*models.UserWithRole)
 	if !ok {
 		return nil, httpErrors.Unauthorized
 	}

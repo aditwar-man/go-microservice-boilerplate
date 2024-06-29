@@ -9,7 +9,7 @@ import (
 
 // Auth Redis repository interface
 type RedisRepository interface {
-	GetByIDCtx(ctx context.Context, key string) (*models.User, error)
-	SetUserCtx(ctx context.Context, key string, seconds int, user *models.User) error
+	GetByIDCtx(ctx context.Context, key string) (*models.UserWithRole, error)
+	SetUserCtx(ctx context.Context, key string, seconds int, user *models.UserWithRole) error
 	DeleteUserCtx(ctx context.Context, key string) error
 }

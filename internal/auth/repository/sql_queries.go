@@ -1,56 +1,74 @@
 package repository
 
 const (
-	createUserQuery = `INSERT INTO users (first_name, last_name, email, password, role, about, avatar, phone_number, address,
-	               		city, gender, postcode, birthday, created_at, updated_at, login_date)
-						VALUES ($1, $2, $3, $4, COALESCE(NULLIF($5, ''), 'user'), $6, $7, $8, $9, $10, $11, $12, $13, now(), now(), now()) 
-						RETURNING *`
+	createUserQuery = `INSERT INTO users (username, email, password, created_at, updated_at, login_at)
+						VALUES ($1, $2, $3, now(), now(), now()) RETURNING *`
 
-	updateUserQuery = `UPDATE users 
-						SET first_name = COALESCE(NULLIF($1, ''), first_name),
-						    last_name = COALESCE(NULLIF($2, ''), last_name),
-						    email = COALESCE(NULLIF($3, ''), email),
-						    role = COALESCE(NULLIF($4, ''), role),
-						    about = COALESCE(NULLIF($5, ''), about),
-						    avatar = COALESCE(NULLIF($6, ''), avatar),
-						    phone_number = COALESCE(NULLIF($7, ''), phone_number),
-						    address = COALESCE(NULLIF($8, ''), address),
-						    city = COALESCE(NULLIF($9, ''), city),
-						    gender = COALESCE(NULLIF($10, ''), gender),
-						    postcode = COALESCE(NULLIF($11, 0), postcode),
-						    birthday = COALESCE(NULLIF($12, '')::date, birthday),
+	updateUserQuery = `UPDATE users
+						SET username = COALESCE(NULLIF($1, ''), username),
+						    email = COALESCE(NULLIF($2, ''), email),
 						    updated_at = now()
-						WHERE user_id = $13
+						WHERE id = $13
 						RETURNING *
 						`
 
-	deleteUserQuery = `DELETE FROM users WHERE user_id = $1`
+	deleteUserQuery = `DELETE FROM users WHERE id = $1`
 
-	getUserQuery = `SELECT user_id, first_name, last_name, email, role, about, avatar, phone_number, 
-       				 address, city, gender, postcode, birthday, created_at, updated_at, login_date  
-					 FROM users 
-					 WHERE user_id = $1`
+	getUserQuery = `SELECT id, username, email, created_at, updated_at, login_at
+					 FROM users
+					 WHERE id = $1`
+	getUserRoleQuery = `SELECT
+							users.id AS "user.id",
+							users.username AS "user.username",
+							users.email AS "user.email",
+							users.password AS "user.password",
+							users.created_at AS "user.created_at",
+							users.updated_at AS "user.updated_at",
+							users.login_at AS "user.login_at",
+							r.id AS "role.id",
+							r.name AS "role.name",
+							r.description AS "role.description",
+							r.parent_role_id AS "role.parent_role_id"
+						FROM public.users users
+						JOIN public.user_roles ar ON ar.user_id = users.id
+						JOIN public.roles r ON r.id = ar.role_id
+						WHERE users.id = $1`
 
-	getTotalCount = `SELECT COUNT(user_id) FROM users 
-						WHERE first_name ILIKE '%' || $1 || '%' or last_name ILIKE '%' || $1 || '%'`
+	getTotalCount = `SELECT COUNT(id) FROM users
+						WHERE username ILIKE '%' || $1 || '%'`
 
-	findUsers = `SELECT user_id, first_name, last_name, email, role, about, avatar, phone_number, address,
-	              city, gender, postcode, birthday, created_at, updated_at, login_date 
-				  FROM users 
-				  WHERE first_name ILIKE '%' || $1 || '%' or last_name ILIKE '%' || $1 || '%'
-				  ORDER BY first_name, last_name
+	findUsers = `SELECT id, username, email,
+	              created_at, updated_at, login_at
+				  FROM users
+				  WHERE username ILIKE '%' || $1 || '%'
+				  ORDER BY username, last_name
 				  OFFSET $2 LIMIT $3
 				  `
 
-	getTotal = `SELECT COUNT(user_id) FROM users`
+	getTotal = `SELECT COUNT(id) FROM users`
 
-	getUsers = `SELECT user_id, first_name, last_name, email, role, about, avatar, phone_number, 
-       			 address, city, gender, postcode, birthday, created_at, updated_at, login_date
-				 FROM users 
-				 ORDER BY COALESCE(NULLIF($1, ''), first_name) OFFSET $2 LIMIT $3`
+	getUsers = `SELECT id, username, email, created_at, updated_at, login_at
+				 FROM users
+				 ORDER BY COALESCE(NULLIF($1, ''), username) OFFSET $2 LIMIT $3`
 
-	findUserByEmail = `SELECT user_id, first_name, last_name, email, role, about, avatar, phone_number, 
-       			 		address, city, gender, postcode, birthday, created_at, updated_at, login_date, password
-				 		FROM users 
+	findUserByEmail = `SELECT id, username, email, password, created_at, updated_at, login_at
+				 		FROM users
 				 		WHERE email = $1`
+
+	findByUsername = `SELECT
+			users.id AS "user.id",
+			users.username AS "user.username",
+			users.email AS "user.email",
+			users.password AS "user.password",
+			users.created_at AS "user.created_at",
+			users.updated_at AS "user.updated_at",
+			users.login_at AS "user.login_at",
+			r.id AS "role.id",
+			r.name AS "role.name",
+			r.description AS "role.description",
+			r.parent_role_id AS "role.parent_role_id"
+		FROM public.users users
+		JOIN public.user_roles ar ON ar.user_id = users.id
+		JOIN public.roles r ON r.id = ar.role_id
+		WHERE users.username = $1`
 )

@@ -1,17 +1,16 @@
 package http
 
 import (
-	"bytes"
-	"io"
 	"net/http"
+	"strconv"
 
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 
 	"github.com/lalapopo123/go-microservice-boilerplate/config"
 	"github.com/lalapopo123/go-microservice-boilerplate/internal/auth"
+	"github.com/lalapopo123/go-microservice-boilerplate/internal/dto"
 	"github.com/lalapopo123/go-microservice-boilerplate/internal/models"
 	"github.com/lalapopo123/go-microservice-boilerplate/internal/session"
 	"github.com/lalapopo123/go-microservice-boilerplate/pkg/csrf"
@@ -46,7 +45,7 @@ func (h *authHandlers) Register() echo.HandlerFunc {
 		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "auth.Register")
 		defer span.Finish()
 
-		user := &models.User{}
+		user := &dto.RegisterUserRequest{}
 		if err := utils.ReadRequest(c, user); err != nil {
 			utils.LogResponseError(c, h.logger, err)
 			return c.JSON(httpErrors.ErrorResponse(err))
@@ -59,7 +58,7 @@ func (h *authHandlers) Register() echo.HandlerFunc {
 		}
 
 		sess, err := h.sessUC.CreateSession(ctx, &models.Session{
-			UserID: createdUser.User.UserID,
+			UserID: createdUser.User.ID,
 		}, h.cfg.Session.Expire)
 		if err != nil {
 			utils.LogResponseError(c, h.logger, err)
@@ -81,31 +80,24 @@ func (h *authHandlers) Register() echo.HandlerFunc {
 // @Success 200 {object} models.User
 // @Router /auth/login [post]
 func (h *authHandlers) Login() echo.HandlerFunc {
-	type Login struct {
-		Email    string `json:"email" db:"email" validate:"omitempty,lte=60,email"`
-		Password string `json:"password,omitempty" db:"password" validate:"required,gte=6"`
-	}
 	return func(c echo.Context) error {
 		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "auth.Login")
 		defer span.Finish()
 
-		login := &Login{}
+		login := &dto.LoginUserRequest{}
 		if err := utils.ReadRequest(c, login); err != nil {
 			utils.LogResponseError(c, h.logger, err)
 			return c.JSON(httpErrors.ErrorResponse(err))
 		}
 
-		userWithToken, err := h.authUC.Login(ctx, &models.User{
-			Email:    login.Email,
-			Password: login.Password,
-		})
+		userWithToken, err := h.authUC.Login(ctx, login)
 		if err != nil {
 			utils.LogResponseError(c, h.logger, err)
 			return c.JSON(httpErrors.ErrorResponse(err))
 		}
 
 		sess, err := h.sessUC.CreateSession(ctx, &models.Session{
-			UserID: userWithToken.User.UserID,
+			UserID: userWithToken.User.ID,
 		}, h.cfg.Session.Expire)
 		if err != nil {
 			utils.LogResponseError(c, h.logger, err)
@@ -166,14 +158,14 @@ func (h *authHandlers) Update() echo.HandlerFunc {
 		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "authHandlers.Update")
 		defer span.Finish()
 
-		uID, err := uuid.Parse(c.Param("user_id"))
+		uID, err := strconv.Atoi(c.Param("user_id"))
 		if err != nil {
 			utils.LogResponseError(c, h.logger, err)
 			return c.JSON(httpErrors.ErrorResponse(err))
 		}
 
 		user := &models.User{}
-		user.UserID = uID
+		user.ID = uID
 
 		if err = utils.ReadRequest(c, user); err != nil {
 			utils.LogResponseError(c, h.logger, err)
@@ -205,7 +197,7 @@ func (h *authHandlers) GetUserByID() echo.HandlerFunc {
 		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "authHandlers.GetUserByID")
 		defer span.Finish()
 
-		uID, err := uuid.Parse(c.Param("user_id"))
+		uID, err := strconv.Atoi(c.Param("user_id"))
 		if err != nil {
 			utils.LogResponseError(c, h.logger, err)
 			return c.JSON(httpErrors.ErrorResponse(err))
@@ -236,7 +228,7 @@ func (h *authHandlers) Delete() echo.HandlerFunc {
 		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "authHandlers.Delete")
 		defer span.Finish()
 
-		uID, err := uuid.Parse(c.Param("user_id"))
+		uID, err := strconv.Atoi(c.Param("user_id"))
 		if err != nil {
 			utils.LogResponseError(c, h.logger, err)
 			return c.JSON(httpErrors.ErrorResponse(err))
@@ -334,7 +326,7 @@ func (h *authHandlers) GetMe() echo.HandlerFunc {
 		span, _ := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "authHandlers.GetMe")
 		defer span.Finish()
 
-		user, ok := c.Get("user").(*models.User)
+		user, ok := c.Get("user").(*models.UserWithRole)
 		if !ok {
 			utils.LogResponseError(c, h.logger, httpErrors.NewUnauthorizedError(httpErrors.Unauthorized))
 			return utils.ErrResponseWithLog(c, h.logger, httpErrors.NewUnauthorizedError(httpErrors.Unauthorized))
@@ -368,72 +360,5 @@ func (h *authHandlers) GetCSRFToken() echo.HandlerFunc {
 		c.Response().Header().Set("Access-Control-Expose-Headers", csrf.CSRFHeader)
 
 		return c.NoContent(http.StatusOK)
-	}
-}
-
-// UploadAvatar godoc
-// @Summary Post avatar
-// @Description Post user avatar image
-// @Tags Auth
-// @Accept  json
-// @Produce  json
-// @Param file formData file true "Body with image file"
-// @Param bucket query string true "aws s3 bucket" Format(bucket)
-// @Param id path int true "user_id"
-// @Success 200 {string} string	"ok"
-// @Failure 500 {object} httpErrors.RestError
-// @Router /auth/{id}/avatar [post]
-func (h *authHandlers) UploadAvatar() echo.HandlerFunc {
-	return func(c echo.Context) error {
-		span, ctx := opentracing.StartSpanFromContext(utils.GetRequestCtx(c), "authHandlers.UploadAvatar")
-		defer span.Finish()
-
-		bucket := c.QueryParam("bucket")
-		uID, err := uuid.Parse(c.Param("user_id"))
-		if err != nil {
-			utils.LogResponseError(c, h.logger, err)
-			return c.JSON(httpErrors.ErrorResponse(err))
-		}
-
-		image, err := utils.ReadImage(c, "file")
-		if err != nil {
-			utils.LogResponseError(c, h.logger, err)
-			return c.JSON(httpErrors.ErrorResponse(err))
-		}
-
-		file, err := image.Open()
-		if err != nil {
-			utils.LogResponseError(c, h.logger, err)
-			return c.JSON(httpErrors.ErrorResponse(err))
-		}
-		defer file.Close()
-
-		binaryImage := bytes.NewBuffer(nil)
-		if _, err = io.Copy(binaryImage, file); err != nil {
-			utils.LogResponseError(c, h.logger, err)
-			return c.JSON(httpErrors.ErrorResponse(err))
-		}
-
-		contentType, err := utils.CheckImageFileContentType(binaryImage.Bytes())
-		if err != nil {
-			utils.LogResponseError(c, h.logger, err)
-			return c.JSON(httpErrors.ErrorResponse(err))
-		}
-
-		reader := bytes.NewReader(binaryImage.Bytes())
-
-		updatedUser, err := h.authUC.UploadAvatar(ctx, uID, models.UploadInput{
-			File:        reader,
-			Name:        image.Filename,
-			Size:        image.Size,
-			ContentType: contentType,
-			BucketName:  bucket,
-		})
-		if err != nil {
-			utils.LogResponseError(c, h.logger, err)
-			return c.JSON(httpErrors.ErrorResponse(err))
-		}
-
-		return c.JSON(http.StatusOK, updatedUser)
 	}
 }
