@@ -7,7 +7,7 @@ import (
 	_ "github.com/jackc/pgx/stdlib" // pgx driver
 	"github.com/jmoiron/sqlx"
 
-	"github.com/lalapopo123/go-microservice-boilerplate/config"
+	"github.com/aditwar-man/go-microservice-boilerplate/config"
 )
 
 const (

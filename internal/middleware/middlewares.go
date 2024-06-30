@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	"github.com/lalapopo123/go-microservice-boilerplate/config"
-	"github.com/lalapopo123/go-microservice-boilerplate/internal/auth"
-	"github.com/lalapopo123/go-microservice-boilerplate/internal/session"
-	"github.com/lalapopo123/go-microservice-boilerplate/pkg/logger"
+	"github.com/aditwar-man/go-microservice-boilerplate/config"
+	"github.com/aditwar-man/go-microservice-boilerplate/internal/auth"
+	"github.com/aditwar-man/go-microservice-boilerplate/internal/session"
+	"github.com/aditwar-man/go-microservice-boilerplate/pkg/logger"
 )
 
 // Middleware manager

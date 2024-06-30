@@ -6,7 +6,7 @@ import (
 
 	"github.com/minio/minio-go/v7"
 
-	"github.com/lalapopo123/go-microservice-boilerplate/internal/models"
+	"github.com/aditwar-man/go-microservice-boilerplate/internal/models"
 )
 
 // Minio AWS S3 interface

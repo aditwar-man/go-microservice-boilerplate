@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"io"
 
-	"github.com/lalapopo123/go-microservice-boilerplate/pkg/logger"
+	"github.com/aditwar-man/go-microservice-boilerplate/pkg/logger"
 )
 
 const (

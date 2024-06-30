@@ -3,9 +3,9 @@ package http
 import (
 	"github.com/labstack/echo/v4"
 
-	"github.com/lalapopo123/go-microservice-boilerplate/config"
-	"github.com/lalapopo123/go-microservice-boilerplate/internal/auth"
-	"github.com/lalapopo123/go-microservice-boilerplate/internal/middleware"
+	"github.com/aditwar-man/go-microservice-boilerplate/config"
+	"github.com/aditwar-man/go-microservice-boilerplate/internal/auth"
+	"github.com/aditwar-man/go-microservice-boilerplate/internal/middleware"
 )
 
 // Map auth routes

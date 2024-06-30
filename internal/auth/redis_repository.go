@@ -4,7 +4,7 @@ package auth
 import (
 	"context"
 
-	"github.com/lalapopo123/go-microservice-boilerplate/internal/models"
+	"github.com/aditwar-man/go-microservice-boilerplate/internal/models"
 )
 
 // Auth Redis repository interface

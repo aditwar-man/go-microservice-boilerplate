@@ -12,11 +12,11 @@ import (
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 
-	"github.com/lalapopo123/go-microservice-boilerplate/config"
-	"github.com/lalapopo123/go-microservice-boilerplate/internal/auth"
-	"github.com/lalapopo123/go-microservice-boilerplate/internal/models"
-	"github.com/lalapopo123/go-microservice-boilerplate/pkg/httpErrors"
-	"github.com/lalapopo123/go-microservice-boilerplate/pkg/utils"
+	"github.com/aditwar-man/go-microservice-boilerplate/config"
+	"github.com/aditwar-man/go-microservice-boilerplate/internal/auth"
+	"github.com/aditwar-man/go-microservice-boilerplate/internal/models"
+	"github.com/aditwar-man/go-microservice-boilerplate/pkg/httpErrors"
+	"github.com/aditwar-man/go-microservice-boilerplate/pkg/utils"
 )
 
 // Auth sessions middleware using redis

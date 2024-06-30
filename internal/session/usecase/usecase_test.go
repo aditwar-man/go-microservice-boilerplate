@@ -7,8 +7,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/lalapopo123/go-microservice-boilerplate/internal/models"
-	"github.com/lalapopo123/go-microservice-boilerplate/internal/session/mock"
+	"github.com/aditwar-man/go-microservice-boilerplate/internal/models"
+	"github.com/aditwar-man/go-microservice-boilerplate/internal/session/mock"
 )
 
 func TestSessionUC_CreateSession(t *testing.T) {

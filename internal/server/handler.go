@@ -4,23 +4,23 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/aditwar-man/go-microservice-boilerplate/docs"
+	"github.com/aditwar-man/go-microservice-boilerplate/pkg/csrf"
+	"github.com/aditwar-man/go-microservice-boilerplate/pkg/metric"
+	"github.com/aditwar-man/go-microservice-boilerplate/pkg/utils"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/lalapopo123/go-microservice-boilerplate/docs"
-	"github.com/lalapopo123/go-microservice-boilerplate/pkg/csrf"
-	"github.com/lalapopo123/go-microservice-boilerplate/pkg/metric"
-	"github.com/lalapopo123/go-microservice-boilerplate/pkg/utils"
 
 	echoSwagger "github.com/swaggo/echo-swagger"
 
-	authHttp "github.com/lalapopo123/go-microservice-boilerplate/internal/auth/delivery/http"
-	authRepository "github.com/lalapopo123/go-microservice-boilerplate/internal/auth/repository"
-	sessionRepository "github.com/lalapopo123/go-microservice-boilerplate/internal/session/repository"
+	authHttp "github.com/aditwar-man/go-microservice-boilerplate/internal/auth/delivery/http"
+	authRepository "github.com/aditwar-man/go-microservice-boilerplate/internal/auth/repository"
+	sessionRepository "github.com/aditwar-man/go-microservice-boilerplate/internal/session/repository"
 
-	authUseCase "github.com/lalapopo123/go-microservice-boilerplate/internal/auth/usecase"
-	sessUseCase "github.com/lalapopo123/go-microservice-boilerplate/internal/session/usecase"
+	authUseCase "github.com/aditwar-man/go-microservice-boilerplate/internal/auth/usecase"
+	sessUseCase "github.com/aditwar-man/go-microservice-boilerplate/internal/session/usecase"
 
-	apiMiddlewares "github.com/lalapopo123/go-microservice-boilerplate/internal/middleware"
+	apiMiddlewares "github.com/aditwar-man/go-microservice-boilerplate/internal/middleware"
 )
 
 func (s *Server) MapHandlers(e *echo.Echo) error {

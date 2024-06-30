@@ -10,8 +10,8 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 
-	"github.com/lalapopo123/go-microservice-boilerplate/config"
-	"github.com/lalapopo123/go-microservice-boilerplate/internal/models"
+	"github.com/aditwar-man/go-microservice-boilerplate/config"
+	"github.com/aditwar-man/go-microservice-boilerplate/internal/models"
 )
 
 // JWT Claims struct

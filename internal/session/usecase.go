@@ -4,7 +4,7 @@ package session
 import (
 	"context"
 
-	"github.com/lalapopo123/go-microservice-boilerplate/internal/models"
+	"github.com/aditwar-man/go-microservice-boilerplate/internal/models"
 )
 
 // Session use case

@@ -8,11 +8,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/aditwar-man/go-microservice-boilerplate/config"
+	"github.com/aditwar-man/go-microservice-boilerplate/pkg/logger"
 	"github.com/go-redis/redis/v8"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
-	"github.com/lalapopo123/go-microservice-boilerplate/config"
-	"github.com/lalapopo123/go-microservice-boilerplate/pkg/logger"
 	"github.com/minio/minio-go/v7"
 )
 

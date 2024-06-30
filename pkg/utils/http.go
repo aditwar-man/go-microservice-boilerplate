@@ -11,11 +11,11 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 
-	"github.com/lalapopo123/go-microservice-boilerplate/config"
-	"github.com/lalapopo123/go-microservice-boilerplate/internal/models"
-	"github.com/lalapopo123/go-microservice-boilerplate/pkg/httpErrors"
-	"github.com/lalapopo123/go-microservice-boilerplate/pkg/logger"
-	"github.com/lalapopo123/go-microservice-boilerplate/pkg/sanitize"
+	"github.com/aditwar-man/go-microservice-boilerplate/config"
+	"github.com/aditwar-man/go-microservice-boilerplate/internal/models"
+	"github.com/aditwar-man/go-microservice-boilerplate/pkg/httpErrors"
+	"github.com/aditwar-man/go-microservice-boilerplate/pkg/logger"
+	"github.com/aditwar-man/go-microservice-boilerplate/pkg/sanitize"
 )
 
 // Get request id from echo context

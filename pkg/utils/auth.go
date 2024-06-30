@@ -3,8 +3,8 @@ package utils
 import (
 	"context"
 
-	"github.com/lalapopo123/go-microservice-boilerplate/pkg/httpErrors"
-	"github.com/lalapopo123/go-microservice-boilerplate/pkg/logger"
+	"github.com/aditwar-man/go-microservice-boilerplate/pkg/httpErrors"
+	"github.com/aditwar-man/go-microservice-boilerplate/pkg/logger"
 )
 
 // Validate is user from owner of content

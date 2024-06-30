@@ -9,8 +9,8 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 
-	"github.com/lalapopo123/go-microservice-boilerplate/internal/auth"
-	"github.com/lalapopo123/go-microservice-boilerplate/internal/models"
+	"github.com/aditwar-man/go-microservice-boilerplate/internal/auth"
+	"github.com/aditwar-man/go-microservice-boilerplate/internal/models"
 )
 
 // Auth redis repository

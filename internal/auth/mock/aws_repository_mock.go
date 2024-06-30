@@ -6,7 +6,7 @@ package mock
 
 import (
 	context "context"
-	models "github.com/lalapopo123/go-microservice-boilerplate/internal/models"
+	models "github.com/aditwar-man/go-microservice-boilerplate/internal/models"
 	gomock "github.com/golang/mock/gomock"
 	minio "github.com/minio/minio-go/v7"
 	reflect "reflect"

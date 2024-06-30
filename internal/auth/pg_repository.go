@@ -4,8 +4,8 @@ package auth
 import (
 	"context"
 
-	"github.com/lalapopo123/go-microservice-boilerplate/internal/models"
-	"github.com/lalapopo123/go-microservice-boilerplate/pkg/utils"
+	"github.com/aditwar-man/go-microservice-boilerplate/internal/models"
+	"github.com/aditwar-man/go-microservice-boilerplate/pkg/utils"
 )
 
 // Auth repository interface

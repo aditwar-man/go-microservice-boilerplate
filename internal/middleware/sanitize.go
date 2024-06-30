@@ -6,7 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/lalapopo123/go-microservice-boilerplate/pkg/sanitize"
+	"github.com/aditwar-man/go-microservice-boilerplate/pkg/sanitize"
 )
 
 // Sanitize and read request body to ctx for next use in easy json

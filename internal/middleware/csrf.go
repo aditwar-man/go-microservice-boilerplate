@@ -5,9 +5,9 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/lalapopo123/go-microservice-boilerplate/pkg/csrf"
-	"github.com/lalapopo123/go-microservice-boilerplate/pkg/httpErrors"
-	"github.com/lalapopo123/go-microservice-boilerplate/pkg/utils"
+	"github.com/aditwar-man/go-microservice-boilerplate/pkg/csrf"
+	"github.com/aditwar-man/go-microservice-boilerplate/pkg/httpErrors"
+	"github.com/aditwar-man/go-microservice-boilerplate/pkg/utils"
 )
 
 // CSRF Middleware

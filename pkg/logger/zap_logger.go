@@ -6,7 +6,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/lalapopo123/go-microservice-boilerplate/config"
+	"github.com/aditwar-man/go-microservice-boilerplate/config"
 )
 
 // Logger methods interface

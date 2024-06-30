@@ -5,7 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/lalapopo123/go-microservice-boilerplate/pkg/utils"
+	"github.com/aditwar-man/go-microservice-boilerplate/pkg/utils"
 )
 
 // Request logger middleware

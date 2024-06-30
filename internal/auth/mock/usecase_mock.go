@@ -6,8 +6,8 @@ package mock
 
 import (
 	context "context"
-	models "github.com/lalapopo123/go-microservice-boilerplate/internal/models"
-	utils "github.com/lalapopo123/go-microservice-boilerplate/pkg/utils"
+	models "github.com/aditwar-man/go-microservice-boilerplate/internal/models"
+	utils "github.com/aditwar-man/go-microservice-boilerplate/pkg/utils"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )

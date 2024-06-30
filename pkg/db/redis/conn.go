@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 
-	"github.com/lalapopo123/go-microservice-boilerplate/config"
+	"github.com/aditwar-man/go-microservice-boilerplate/config"
 )
 
 // Returns new redis client

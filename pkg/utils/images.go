@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/lalapopo123/go-microservice-boilerplate/pkg/httpErrors"
+	"github.com/aditwar-man/go-microservice-boilerplate/pkg/httpErrors"
 )
 
 var allowedImagesContentType = map[string]string{
