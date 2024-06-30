@@ -40,11 +40,10 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	aRepo := authRepository.NewAuthRepository(s.db)
 	roleRepo := rbacRepo.NewRoleRepository(s.db)
 	sRepo := sessionRepository.NewSessionRepository(s.redisClient, s.cfg)
-	aAWSRepo := authRepository.NewAuthAWSRepository(s.awsClient)
 	authRedisRepo := authRepository.NewAuthRedisRepo(s.redisClient)
 
 	// Init useCases
-	authUC := authUseCase.NewAuthUseCase(s.cfg, aRepo, authRedisRepo, aAWSRepo, s.logger)
+	authUC := authUseCase.NewAuthUseCase(s.cfg, aRepo, authRedisRepo, s.logger)
 	sessUC := sessUseCase.NewSessionUseCase(sRepo, s.cfg)
 	rbacUc := rbacUseCase.NewRbacUsecase(s.cfg, roleRepo, s.logger)
 
