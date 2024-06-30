@@ -16,8 +16,10 @@ func MapAuthRoutes(authGroup *echo.Group, h auth.Handlers, mw *middleware.Middle
 	authGroup.GET("/find", h.FindByName())
 	authGroup.GET("/all", h.GetUsers())
 	authGroup.GET("/:user_id", h.GetUserByID())
+
 	authGroup.Use(mw.AuthJWTMiddleware(authUC, cfg))
-	// authGroup.Use(mw.AuthSessionMiddleware)
+	authGroup.Use(mw.AuthSessionMiddleware)
+
 	authGroup.GET("/me", h.GetMe())
 	authGroup.GET("/token", h.GetCSRFToken())
 	authGroup.PUT("/:user_id", h.Update(), mw.OwnerOrAdminMiddleware(), mw.CSRF)
