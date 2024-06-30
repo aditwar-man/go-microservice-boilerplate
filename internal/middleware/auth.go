@@ -120,8 +120,8 @@ func (mw *MiddlewareManager) AuthJWTMiddleware(authUC auth.UseCase, cfg *config.
 func (mw *MiddlewareManager) AdminMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		user, ok := c.Get("user").(*models.UserWithRole)
-		if !ok || *&user.Role.Name != "admin" {
-			return c.JSON(http.StatusForbidden, httpErrors.NewUnauthorizedError(httpErrors.PermissionDenied))
+		if !ok || *&user.Role.Name != "administrator" {
+			return c.JSON(http.StatusForbidden, httpErrors.NewForbiddenError(httpErrors.PermissionDenied))
 		}
 		return next(c)
 	}
@@ -167,6 +167,7 @@ func (mw *MiddlewareManager) RoleBasedAuthMiddleware(roles []string) echo.Middle
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			user, ok := c.Get("user").(*models.UserWithRole)
+
 			if !ok {
 				mw.logger.Errorf("Error c.Get(user) RequestID: %s, UserID: %d, ERROR: %s,",
 					utils.GetRequestID(c),

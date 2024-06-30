@@ -15,9 +15,12 @@ import (
 
 	authHttp "github.com/aditwar-man/go-microservice-boilerplate/internal/auth/delivery/http"
 	authRepository "github.com/aditwar-man/go-microservice-boilerplate/internal/auth/repository"
+	rbacHttp "github.com/aditwar-man/go-microservice-boilerplate/internal/rbac/delivery/http"
+	rbacRepo "github.com/aditwar-man/go-microservice-boilerplate/internal/rbac/repository"
 	sessionRepository "github.com/aditwar-man/go-microservice-boilerplate/internal/session/repository"
 
 	authUseCase "github.com/aditwar-man/go-microservice-boilerplate/internal/auth/usecase"
+	rbacUseCase "github.com/aditwar-man/go-microservice-boilerplate/internal/rbac/usecase"
 	sessUseCase "github.com/aditwar-man/go-microservice-boilerplate/internal/session/usecase"
 
 	apiMiddlewares "github.com/aditwar-man/go-microservice-boilerplate/internal/middleware"
@@ -35,6 +38,7 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	)
 
 	aRepo := authRepository.NewAuthRepository(s.db)
+	roleRepo := rbacRepo.NewRoleRepository(s.db)
 	sRepo := sessionRepository.NewSessionRepository(s.redisClient, s.cfg)
 	aAWSRepo := authRepository.NewAuthAWSRepository(s.awsClient)
 	authRedisRepo := authRepository.NewAuthRedisRepo(s.redisClient)
@@ -42,9 +46,11 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	// Init useCases
 	authUC := authUseCase.NewAuthUseCase(s.cfg, aRepo, authRedisRepo, aAWSRepo, s.logger)
 	sessUC := sessUseCase.NewSessionUseCase(sRepo, s.cfg)
+	rbacUc := rbacUseCase.NewRbacUsecase(s.cfg, roleRepo, s.logger)
 
 	// Init handlers
 	authHandlers := authHttp.NewAuthHandlers(s.cfg, authUC, sessUC, s.logger)
+	rbacHandlers := rbacHttp.NewRbacHandlers(s.cfg, rbacUc, s.logger)
 
 	mw := apiMiddlewares.NewMiddlewareManager(sessUC, authUC, s.cfg, []string{"*"}, s.logger)
 
@@ -87,6 +93,7 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	authGroup := v1.Group("/auth")
 
 	authHttp.MapAuthRoutes(authGroup, authHandlers, mw, authUC, s.cfg)
+	rbacHttp.MapRbacRoutes(authGroup, rbacHandlers, mw, authUC, s.cfg)
 
 	health.GET("", func(c echo.Context) error {
 		s.logger.Infof("Health check RequestID: %s", utils.GetRequestID(c))
