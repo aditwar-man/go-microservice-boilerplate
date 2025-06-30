@@ -6,16 +6,16 @@ LIST_GO_FILES = Get-ChildItem -Path . -Recurse -Filter *.go | ForEach-Object { $
 # Go migrate postgresql
 
 force:
-	migrate -database postgres://postgres:postgres@localhost:5432/user_service_db?sslmode=disable -path migrations force 1
+	migrate -database postgres://postgres:lalapopo123@localhost:5432/user_service_db?sslmode=disable -path migrations force 1
 
 version:
-	migrate -database postgres://postgres:postgres@localhost:5432/user_service_db?sslmode=disable -path migrations version
+	migrate -database postgres://postgres:lalapopo123@localhost:5432/user_service_db?sslmode=disable -path migrations version
 
 migrate_up:
-	migrate -database postgres://postgres:postgres@localhost:5432/user_service_db?sslmode=disable -path migrations up
+	migrate -database postgres://postgres:lalapopo123@localhost:5432/user_service_db?sslmode=disable -path migrations up
 
 migrate_down:
-	migrate -database postgres://postgres:postgres@localhost:5432/user_service_db?sslmode=disable -path migrations down 1
+	migrate -database postgres://postgres:lalapopo123@localhost:5432/user_service_db?sslmode=disable -path migrations down 1
 
 
 # ==============================================================================

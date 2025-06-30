@@ -136,6 +136,8 @@ func NewForbiddenError(causes interface{}) RestErr {
 
 // New Internal Server Error
 func NewInternalServerError(causes interface{}) RestErr {
+	fmt.Println(causes)
+
 	result := RestError{
 		ErrStatus: http.StatusInternalServerError,
 		ErrError:  InternalServerError.Error(),
@@ -169,6 +171,7 @@ func ParseErrors(err error) RestErr {
 		if restErr, ok := err.(RestErr); ok {
 			return restErr
 		}
+
 		return NewInternalServerError(err)
 	}
 }

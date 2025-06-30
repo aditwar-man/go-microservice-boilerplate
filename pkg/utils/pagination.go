@@ -92,6 +92,8 @@ func GetPaginationFromCtx(c echo.Context) (*PaginationQuery, error) {
 	if err := q.SetPage(c.QueryParam("page")); err != nil {
 		return nil, err
 	}
+	fmt.Println(q)
+
 	if err := q.SetSize(c.QueryParam("size")); err != nil {
 		return nil, err
 	}

@@ -3,6 +3,8 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/opentracing/opentracing-go"
@@ -29,6 +31,8 @@ func (r *authRepo) Register(ctx context.Context, user *models.User) (*models.Use
 	defer span.Finish()
 
 	u := &models.User{}
+	sl, _ := json.Marshal(user)
+	fmt.Println(string(sl))
 	if err := r.db.QueryRowxContext(ctx, createUserQuery, &user.Username, &user.Email, &user.Password).StructScan(u); err != nil {
 		return nil, errors.Wrap(err, "authRepo.Register.StructScan")
 	}

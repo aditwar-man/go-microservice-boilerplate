@@ -8,16 +8,24 @@ import (
 )
 
 // User full model
+// User model with enhanced fields
 type User struct {
-	ID        int       `json:"id" db:"id" redis:"user_id" validate:"required"`
-	Username  string    `json:"username,omitempty" db:"username" redis:"username" validate:"omitempty,lte=60"`
-	Email     string    `json:"email,omitempty" db:"email" redis:"email" validate:"omitempty,lte=60,email"`
-	Password  string    `json:"password,omitempty" db:"password" redis:"password" validate:"omitempty,required"`
-	CreatedAt time.Time `json:"created_at,omitempty" db:"created_at" redis:"created_at"`
-	UpdatedAt time.Time `json:"updated_at,omitempty" db:"updated_at" redis:"updated_at"`
-	LoginDate time.Time `json:"login_at" db:"login_at" redis:"login_at"`
+	ID          int              `json:"id" db:"id"`
+	Username    string           `json:"username" db:"username"`
+	Email       string           `json:"email" db:"email"`
+	Password    string           `json:"-" db:"password"`
+	CreatedAt   time.Time        `json:"created_at" db:"created_at"`
+	UpdatedAt   time.Time        `json:"updated_at" db:"updated_at"`
+	LoginAt     *time.Time       `json:"login_at,omitempty" db:"login_at"`
+	Roles       []Role           `json:"roles,omitempty"`
+	Permissions []RolePermission `json:"permissions,omitempty"`
 }
 
+// UserRole junction table
+type UserRole struct {
+	UserID int `json:"user_id" db:"user_id"`
+	RoleID int `json:"role_id" db:"role_id"`
+}
 type UserWithRole struct {
 	User User `json:"user" db:"user"`
 	Role Role `json:"role" db:"role"`

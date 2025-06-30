@@ -55,6 +55,10 @@ func main() {
 	}
 	defer psqlDB.Close()
 
+	if err := postgres.SeedRBACData(psqlDB.DB); err != nil {
+		appLogger.Fatalf("Postgresql seed: %s", err)
+	}
+
 	// Initial Redis
 	redisClient := redis.NewRedisClient(cfg)
 	defer redisClient.Close()

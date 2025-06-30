@@ -23,7 +23,7 @@ postgres:
   PostgresqlHost: localhost
   PostgresqlPort: 5432
   PostgresqlUser: postgres
-  PostgresqlPassword: postgres
+  PostgresqlPassword: lalapopo123
   PostgresqlDbname: user_service_db
   PostgresqlSslmode: false
   PgDriver: pgx
