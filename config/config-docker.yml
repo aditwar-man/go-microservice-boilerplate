@@ -24,7 +24,7 @@ postgres:
   PostgresqlPort: 5432
   PostgresqlUser: postgres
   PostgresqlPassword: postgres
-  PostgresqlDbname: user_service_db
+  PostgresqlDbname: multi_wallet_db
   PostgresqlSslmode: false
   PgDriver: pgx
 

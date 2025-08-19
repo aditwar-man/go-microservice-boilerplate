@@ -1,7 +1,7 @@
 package repository
 
 const (
-	createUserQuery = `INSERT INTO users (username, email, password, created_at, updated_at, login_at)
+	createUserQuery = `INSERT INTO users (username, email, password_hash, created_at, updated_at, login_at)
 						VALUES ($1, $2, $3, now(), now(), now()) RETURNING *`
 
 	updateUserQuery = `UPDATE users
@@ -21,7 +21,7 @@ const (
 							users.id AS "user.id",
 							users.username AS "user.username",
 							users.email AS "user.email",
-							users.password AS "user.password",
+							users.password_hash AS "user.password_hash",
 							users.created_at AS "user.created_at",
 							users.updated_at AS "user.updated_at",
 							users.login_at AS "user.login_at",
@@ -51,7 +51,7 @@ const (
 				 FROM users
 				 ORDER BY COALESCE(NULLIF($1, ''), username) OFFSET $2 LIMIT $3`
 
-	findUserByEmail = `SELECT id, username, email, password, created_at, updated_at, login_at
+	findUserByEmail = `SELECT id, username, email, password_hash, created_at, updated_at, login_at
 				 		FROM users
 				 		WHERE email = $1`
 
@@ -59,7 +59,7 @@ const (
 			users.id AS "user.id",
 			users.username AS "user.username",
 			users.email AS "user.email",
-			users.password AS "user.password",
+			users.password_hash AS "user.password_hash",
 			users.created_at AS "user.created_at",
 			users.updated_at AS "user.updated_at",
 			users.login_at AS "user.login_at",

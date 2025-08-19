@@ -21,10 +21,10 @@ logger:
 
 postgres:
   PostgresqlHost: localhost
-  PostgresqlPort: 5432
+  PostgresqlPort: 5433
   PostgresqlUser: postgres
-  PostgresqlPassword: lalapopo123
-  PostgresqlDbname: user_service_db
+  PostgresqlPassword: lalapopo
+  PostgresqlDbname: multiwallet_db
   PostgresqlSslmode: false
   PgDriver: pgx
   DefaultSchema: public

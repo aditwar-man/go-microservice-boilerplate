@@ -89,6 +89,41 @@ CREATE TABLE IF NOT EXISTS role_permissions (
 CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_role_permission
 ON role_permissions(role_id, permission_id, resource_id, context_id);
 
+
+-- wallets
+CREATE TABLE IF NOT EXISTS wallets (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_wallets_user_id ON wallets(user_id);
+
+-- wallet balances (amount in minor unit, e.g., cents)
+-- wallet_balances
+CREATE TABLE IF NOT EXISTS wallet_balances (
+  wallet_id BIGINT NOT NULL REFERENCES wallets(id) ON DELETE CASCADE,
+  currency  TEXT NOT NULL,
+  amount    NUMERIC(36,18) NOT NULL DEFAULT 0,
+  PRIMARY KEY (wallet_id, currency),
+  CHECK (amount >= 0)
+);
+
+-- txs
+CREATE TABLE IF NOT EXISTS txs (
+  id BIGSERIAL PRIMARY KEY,
+  wallet_id BIGINT NOT NULL REFERENCES wallets(id) ON DELETE CASCADE,
+  type TEXT NOT NULL,
+  currency TEXT NOT NULL,
+  amount NUMERIC(36,18) NOT NULL,
+  ref_id TEXT,
+  meta JSONB,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_tx_wallet_created ON txs(wallet_id, created_at DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS ux_tx_ref_id ON txs(ref_id);
+
 CREATE INDEX IF NOT EXISTS idx_role_permissions_role_id ON role_permissions(role_id);
 CREATE INDEX IF NOT EXISTS idx_role_permissions_permission_id ON role_permissions(permission_id);
 CREATE INDEX IF NOT EXISTS idx_role_permissions_resource_id ON role_permissions(resource_id);

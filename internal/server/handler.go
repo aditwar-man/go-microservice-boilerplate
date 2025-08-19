@@ -21,6 +21,9 @@ import (
 	rbacUseCase "github.com/aditwar-man/go-microservice-boilerplate/internal/rbac/usecase"
 	sessionRepository "github.com/aditwar-man/go-microservice-boilerplate/internal/session/repository"
 	sessUseCase "github.com/aditwar-man/go-microservice-boilerplate/internal/session/usecase"
+	walletHttp "github.com/aditwar-man/go-microservice-boilerplate/internal/wallet/delivery/http"
+	wallet_repo "github.com/aditwar-man/go-microservice-boilerplate/internal/wallet/repository"
+	walletUsecase "github.com/aditwar-man/go-microservice-boilerplate/internal/wallet/usecase"
 )
 
 func (s *Server) MapHandlers(e *echo.Echo) error {
@@ -42,15 +45,18 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 
 	// Initialize RBAC service
 	rbacService := rbac_service.NewRBACService(s.db)
+	walletRepository := wallet_repo.NewWalletRepository(s.db)
 
 	// Init useCases
 	authUC := authUseCase.NewAuthUseCase(s.cfg, aRepo, authRedisRepo, s.logger)
 	sessUC := sessUseCase.NewSessionUseCase(sRepo, s.cfg)
 	rbacUc := rbacUseCase.NewRbacUsecase(s.cfg, rbacService, s.logger)
+	walletUC := walletUsecase.NewWalletUseCase(s.cfg, walletRepository, s.logger)
 
 	// Init handlers
 	authHandlers := authHttp.NewAuthHandlers(s.cfg, authUC, sessUC, s.logger)
 	rbacHandlers := rbacHttp.NewRbacHandlers(s.cfg, rbacUc, s.logger)
+	walletHandlers := walletHttp.NewWalletHandlers(s.cfg, walletUC, s.logger)
 
 	// Initialize middleware
 	mw := apiMiddlewares.NewMiddlewareManager(sessUC, authUC, s.cfg, []string{"*"}, s.logger)
@@ -125,6 +131,10 @@ func (s *Server) MapHandlers(e *echo.Echo) error {
 	userGroup := v1.Group("/users")
 	userGroup.Use(mw.AuthJWTMiddleware(authUC, s.cfg)) // Require authentication
 	rbacHttp.MapUserRbacRoutes(userGroup, rbacHandlers, mw, rbacMw, authUC, s.cfg)
+
+	walletGroup := v1.Group("/wallets")
+	walletGroup.Use(mw.AuthJWTMiddleware(authUC, s.cfg))
+	walletHttp.MapWalletRoutes(walletGroup, walletHandlers, mw, authUC, walletUC, s.cfg)
 
 	s.logger.Info("Successfully mapped all handlers with RBAC support")
 	return nil
