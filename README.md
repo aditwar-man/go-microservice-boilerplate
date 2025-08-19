@@ -1,7 +1,7 @@
 ````markdown
 # 🚀 Go Microservice Boilerplate - Simple Multi Wallet Currency  
 
-Contoh **REST API dengan Clean Architecture** di Golang.  
+**REST API dengan Clean Architecture** di Golang.  
 Didesain modular, scalable, dan siap dipake buat production.  
 
 ---
